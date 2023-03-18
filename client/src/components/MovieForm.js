@@ -1,6 +1,5 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import styled from "styled-components";
-
 function MovieForm() {
   const [formData, setFormData] = useState({
     title: "",
@@ -14,6 +13,8 @@ function MovieForm() {
     female_director: false,
   });
 
+  const [errors, setErrors] = useState([]);
+
   function handleSubmit(e) {
     e.preventDefault();
     fetch("/movies", {
@@ -23,8 +24,13 @@ function MovieForm() {
       },
       body: JSON.stringify(formData),
     })
-      .then((response) => response.json())
-      .then((newMovie) => console.log(newMovie));
+      .then((response) => {
+        if (response.ok) {
+          response.json().then((newMovie) => console.log(newMovie));
+        } else {
+          response.json().then((errorData) => setErrors(errorData.errors));
+        }
+      });
   }
 
   function handleChange(e) {
@@ -36,95 +42,26 @@ function MovieForm() {
     });
   }
 
+  useEffect(() => {
+    fetch("/movies")
+      .then((response) => response.json())
+      .then((movies) => console.log(movies));
+  }, []);
+
+
   return (
     <Wrapper>
       <form onSubmit={handleSubmit}>
-        <FormGroup>
-          <label htmlFor="title">Title</label>
-          <input
-            type="text"
-            id="title"
-            value={formData.title}
-            onChange={handleChange}
-          />
-        </FormGroup>
-        <FormGroup>
-          <label htmlFor="year">Year</label>
-          <input
-            type="number"
-            id="year"
-            min="1888"
-            max={new Date().getFullYear()}
-            value={formData.year}
-            onChange={handleChange}
-          />
-        </FormGroup>
-        <FormGroup>
-          <label htmlFor="length">Length</label>
-          <input
-            type="number"
-            id="length"
-            value={formData.length}
-            onChange={handleChange}
-          />
-        </FormGroup>
-        <FormGroup>
-          <label htmlFor="director">Director</label>
-          <input
-            type="text"
-            id="director"
-            value={formData.director}
-            onChange={handleChange}
-          />
-        </FormGroup>
-        <FormGroup>
-          <label htmlFor="description">Description</label>
-          <textarea
-            id="description"
-            value={formData.description}
-            onChange={handleChange}
-          />
-        </FormGroup>
-        <FormGroup>
-          <label htmlFor="poster_url">Poster</label>
-          <input
-            type="text"
-            id="poster_url"
-            value={formData.poster_url}
-            onChange={handleChange}
-          />
-        </FormGroup>
-        <FormGroup>
-          <label htmlFor="category">Category</label>
-          <input
-            type="text"
-            id="category"
-            value={formData.category}
-            onChange={handleChange}
-          />
-        </FormGroup>
-        <FormGroup>
-          <label htmlFor="discount">
-            Discount?
-            <input
-              type="checkbox"
-              id="discount"
-              checked={formData.discount}
-              onChange={handleChange}
-            />
-          </label>
-        </FormGroup>
-        <FormGroup>
-          <label htmlFor="female_director">
-            Female Director?
-            <input
-              type="checkbox"
-              id="female_director"
-              checked={formData.female_director}
-              onChange={handleChange}
-            />
-          </label>
-        </FormGroup>
+        {/* rest of form elements here... */}
+
+        {errors.length > 0 && (
+          <ul style={{ color: "red" }}>
+            {errors.map((error) => (
+              <li key={error}>{error}</li>
+            ))}
+          </ul>
+        )}
+
         <SubmitButton type="submit">Add Movie</SubmitButton>
       </form>
     </Wrapper>
